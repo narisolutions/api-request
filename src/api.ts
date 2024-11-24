@@ -57,7 +57,7 @@ class ApiRequest {
 
         clearTimeout(id);
 
-        if (!response.ok) return this.handleError(response);
+        if (!response.ok) throw this.handleError(response);
         const result: D = await this.handleSuccess(response);
         return result;
     }
