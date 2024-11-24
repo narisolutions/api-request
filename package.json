@@ -3,7 +3,7 @@
     "private": false,
     "version": "1.0.0",
     "type": "module",
-    "description": "Minimal library for handling API requests",
+    "description": "Minimal library for handling API requests.",
     "author": "Nari Solutions LLC",
     "main": "dist/index.umd.js",
     "module": "dist/index.es.js",
@@ -29,5 +29,8 @@
         "typescript": "~5.6.2",
         "vite": "^5.4.10",
         "vite-plugin-dts": "^4.3.0"
+    },
+    "dependencies": {
+        "firebase": "^11.0.2"
     }
 }

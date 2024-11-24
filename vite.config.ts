@@ -17,6 +17,9 @@ export default defineConfig({
         },
         sourcemap: false,
         emptyOutDir: true,
+        rollupOptions: {
+            external: ["firebase"],
+        },
     },
     plugins: [dts()],
 });
