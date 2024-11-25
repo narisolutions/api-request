@@ -21,7 +21,7 @@ export default defineConfig({
             external: ["firebase"],
             output: {
                 globals: {
-                    firebase: "Firebase",
+                    firebase: "firebase",
                 },
                 format: "es",
             },

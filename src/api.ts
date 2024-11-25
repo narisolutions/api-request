@@ -1,4 +1,4 @@
-import { Auth, getAuth } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
 type Config = {
     /**
@@ -46,14 +46,11 @@ class ApiRequest {
     protected mode: RequestMode = "cors";
     protected referrer: ReferrerPolicy = "no-referrer";
     protected timeoutMs = 20000;
-    protected auth: Auth | null = null;
 
     constructor(config: Config) {
         this.baseURL = config.baseURL;
         if (config.timeoutMs) this.timeoutMs = config.timeoutMs;
         if (config.authType) this.authType = config.authType;
-
-        this.auth = getAuth();
     }
 
     async CALL<D>(method: RequestMethod, route: RequestRoute, extra?: RequestExtra) {
@@ -162,6 +159,7 @@ class ApiRequest {
     }
 
     private async getToken(refresh?: boolean) {
+        const auth = getAuth();
         let retries = 0;
         let token = "";
 
@@ -169,7 +167,7 @@ class ApiRequest {
             try {
                 if (retries === 3) return;
 
-                if (!this.auth?.currentUser) {
+                if (!auth.currentUser) {
                     retries++;
                     const waitMs = !this.isInit ? 3000 : retries * 1000;
                     if (!this.isInit) this.isInit = true;
@@ -177,7 +175,7 @@ class ApiRequest {
                     await this.sleep(waitMs);
                     await get(refresh);
                 } else {
-                    token = await this.auth.currentUser.getIdToken(refresh);
+                    token = await auth.currentUser.getIdToken(refresh);
                 }
             } catch (e) {
                 if (retries === 3) {
@@ -193,7 +191,7 @@ class ApiRequest {
         await get(refresh);
 
         if (!token) {
-            await this.auth?.signOut();
+            await auth.signOut();
             throw new Error("Your session either has expired or is invalid. Please login again.");
         }
 
