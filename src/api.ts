@@ -1,14 +1,36 @@
 import { getAuth } from "firebase/auth";
 
 type Config = {
+    /**
+     * Base URL to be used for api requests.
+     * @example "https://api.fake.com/v1"
+     */
     baseURL: string;
+    /**
+     * Authentication method for requests. Currently supports only Bearer authentication method.
+     * @default "Bearer"
+     */
     authType?: "Bearer";
+    /**
+     * Request timeout in milliseconds.
+     * @default 20000
+     */
     timeoutMs?: number;
 };
 
 type RequestExtra = {
+    /**
+     * Body of the request
+     */
     data?: unknown;
+    /**
+     * Abort controller for canceling requests. If not provided method will generate it's own abort controller instance.
+     */
     controller?: AbortController;
+    /**
+     * Whether or not request has to include access token to headers.
+     * @default true
+     */
     requireToken?: boolean;
 };
 
@@ -57,7 +79,7 @@ class ApiRequest {
 
         clearTimeout(id);
 
-        if (!response.ok) return this.handleError(response);
+        if (!response.ok) throw this.handleError(response);
         const result: D = await this.handleSuccess(response);
         return result;
     }
