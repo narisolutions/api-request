@@ -19,6 +19,12 @@ export default defineConfig({
         emptyOutDir: true,
         rollupOptions: {
             external: ["firebase"],
+            output: {
+                globals: {
+                    firebase: "Firebase",
+                },
+                format: "es",
+            },
         },
     },
     plugins: [dts()],
