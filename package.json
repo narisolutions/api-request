@@ -1,7 +1,7 @@
 {
     "name": "@narisolutions/api-request",
     "private": false,
-    "version": "1.0.3",
+    "version": "1.0.4",
     "type": "module",
     "description": "Minimal library for handling API requests.",
     "author": "Nari Solutions LLC",
@@ -33,5 +33,17 @@
     },
     "dependencies": {
         "firebase": "^11.0.2"
-    }
+    },
+    "keywords": [
+        "xhr",
+        "http",
+        "ajax",
+        "promise",
+        "node"
+    ],
+    "contributors": [
+        "Irakli Ghachava (https://github.com/homosape)",
+        "Giorgi Bregvadze (https://github.com/GBreg19)",
+        "Beka Jalagania (https://github.com/jalagania)"
+    ]
 }
