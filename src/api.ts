@@ -1,4 +1,4 @@
-import { getAuth } from "firebase/auth";
+import { Auth } from "firebase/auth";
 
 type Config = {
     /**
@@ -11,6 +11,10 @@ type Config = {
      * @default "Bearer"
      */
     authType?: "Bearer";
+    /**
+     * Firebase Auth instance.
+     */
+    authInstance?: Auth;
     /**
      * Request timeout in milliseconds.
      * @default 20000
@@ -41,8 +45,8 @@ type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 class ApiRequest {
     public baseURL: string | null = null;
 
-    protected isInit = false;
     protected authType: "Bearer" = "Bearer";
+    protected authInstance: Auth | null = null;
     protected mode: RequestMode = "cors";
     protected referrer: ReferrerPolicy = "no-referrer";
     protected timeoutMs = 20000;
@@ -51,6 +55,7 @@ class ApiRequest {
         this.baseURL = config.baseURL;
         if (config.timeoutMs) this.timeoutMs = config.timeoutMs;
         if (config.authType) this.authType = config.authType;
+        if (config.authInstance) this.authInstance = config.authInstance;
     }
 
     async CALL<D>(method: RequestMethod, route: RequestRoute, extra?: RequestExtra) {
@@ -159,23 +164,25 @@ class ApiRequest {
     }
 
     private async getToken(refresh?: boolean) {
-        const auth = getAuth();
         let retries = 0;
         let token = "";
+        let isInit = false;
 
         const get = async (refresh?: boolean) => {
             try {
                 if (retries === 3) return;
 
-                if (!auth.currentUser) {
+                const currentUser = this.authInstance?.currentUser;
+
+                if (!currentUser) {
                     retries++;
-                    const waitMs = !this.isInit ? 3000 : retries * 1000;
-                    if (!this.isInit) this.isInit = true;
+                    const waitMs = !isInit ? 3000 : retries * 1000;
+                    if (!isInit) isInit = true;
 
                     await this.sleep(waitMs);
                     await get(refresh);
                 } else {
-                    token = await auth.currentUser.getIdToken(refresh);
+                    token = await currentUser.getIdToken(refresh);
                 }
             } catch (e) {
                 if (retries === 3) {
@@ -191,7 +198,7 @@ class ApiRequest {
         await get(refresh);
 
         if (!token) {
-            await auth.signOut();
+            await this.authInstance?.signOut();
             throw new Error("Your session either has expired or is invalid. Please login again.");
         }
 
