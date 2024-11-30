@@ -71,7 +71,7 @@ class ApiRequest {
     }
 
     async put<T>(route: string, config?: RequestConfig) {
-        const response = await this.fetch("POST", route, config);
+        const response = await this.fetch("PUT", route, config);
 
         if (!response.ok) throw this.handleError(response);
         const result: T = await this.handleSuccess(response);
