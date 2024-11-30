@@ -1,6 +1,6 @@
 import { Auth } from "firebase/auth";
 
-type Config = {
+type ApiConfig = {
     /**
      * Base URL to be used for api requests.
      * @example "https://api.fake.com/v1"
@@ -22,7 +22,7 @@ type Config = {
     timeoutMs?: number;
 };
 
-type RequestExtra = {
+type RequestConfig = {
     /**
      * Body of the request
      */
@@ -32,13 +32,11 @@ type RequestExtra = {
      */
     controller?: AbortController;
     /**
-     * Whether or not request has to include access token to headers.
+     * Whether or not request should be authenticated.
      * @default true
      */
-    requireToken?: boolean;
+    authenticate?: boolean;
 };
-
-type RequestRoute = string;
 
 type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
@@ -47,51 +45,85 @@ class ApiRequest {
 
     protected authType: "Bearer" = "Bearer";
     protected authInstance: Auth | null = null;
-    protected mode: RequestMode = "cors";
-    protected referrer: ReferrerPolicy = "no-referrer";
     protected timeoutMs = 20000;
 
-    constructor(config: Config) {
+    constructor(config: ApiConfig) {
         this.baseURL = config.baseURL;
         if (config.timeoutMs) this.timeoutMs = config.timeoutMs;
         if (config.authType) this.authType = config.authType;
         if (config.authInstance) this.authInstance = config.authInstance;
     }
 
-    async CALL<D>(method: RequestMethod, route: RequestRoute, extra?: RequestExtra) {
-        const data = extra?.data ?? null;
-        const requireToken = extra?.requireToken ?? true;
-        const controller = extra?.controller ?? new AbortController();
+    async get<T>(route: string, config?: Omit<RequestConfig, "data">) {
+        const response = await this.fetch("GET", route, config);
+
+        if (!response.ok) throw this.handleError(response);
+        const result: T = await this.handleSuccess(response);
+        return result;
+    }
+
+    async post<T>(route: string, config?: RequestConfig) {
+        const response = await this.fetch("POST", route, config);
+
+        if (!response.ok) throw this.handleError(response);
+        const result: T = await this.handleSuccess(response);
+        return result;
+    }
+
+    async put<T>(route: string, config?: RequestConfig) {
+        const response = await this.fetch("POST", route, config);
+
+        if (!response.ok) throw this.handleError(response);
+        const result: T = await this.handleSuccess(response);
+        return result;
+    }
+
+    async patch<T>(route: string, config?: RequestConfig) {
+        const response = await this.fetch("PATCH", route, config);
+
+        if (!response.ok) throw this.handleError(response);
+        const result: T = await this.handleSuccess(response);
+        return result;
+    }
+
+    async delete<T>(route: string, config?: Omit<RequestConfig, "data">) {
+        const response = await this.fetch("DELETE", route, config);
+
+        if (!response.ok) throw this.handleError(response);
+        const result: T = await this.handleSuccess(response);
+        return result;
+    }
+
+    protected async fetch(method: RequestMethod, route: string, config?: RequestConfig) {
+        const authenticate = config?.authenticate ?? true;
+        const controller = config?.controller ?? new AbortController();
+        const data = config?.data ?? null;
 
         if ((method === "GET" || method === "DELETE") && data !== null) {
             throw new Error(`Invalid method call. Can't pass data to ${method} request.`);
         }
 
         const id = setTimeout(() => controller.abort(), this.timeoutMs);
-
-        const headers = await this.getHeaders({ requireToken });
-        const body = this.getBody({ data });
+        const headers = await this.getHeaders({ authenticate });
 
         const response = await fetch(this.baseURL + route, {
             headers,
             method,
-            mode: this.mode,
-            referrer: this.referrer,
+            mode: "cors",
+            referrer: "no-referrer",
             signal: controller.signal,
-            ...(body && { body }),
+            ...(data && { body: this.getBody({ data }) }),
         });
 
         clearTimeout(id);
 
-        if (!response.ok) throw this.handleError(response);
-        const result: D = await this.handleSuccess(response);
-        return result;
+        return response;
     }
 
-    protected async getHeaders({ data, requireToken }: { data?: unknown; requireToken?: boolean }) {
+    protected async getHeaders({ data, authenticate }: { data?: unknown; authenticate?: boolean }) {
         let token = "";
 
-        if (requireToken) {
+        if (authenticate) {
             token = await this.getToken();
         }
 
@@ -112,7 +144,7 @@ class ApiRequest {
         };
     }
 
-    protected getBody({ data }: { data?: unknown; requireToken?: boolean }) {
+    protected getBody({ data }: { data?: unknown; authenticate?: boolean }) {
         if (!data) {
             return null;
         }
