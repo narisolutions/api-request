@@ -104,7 +104,7 @@ class ApiRequest {
         }
 
         const id = setTimeout(() => controller.abort(), this.timeoutMs);
-        const headers = await this.getHeaders({ authenticate });
+        const headers = await this.getHeaders({ data, authenticate });
 
         const response = await fetch(this.baseURL + route, {
             headers,
