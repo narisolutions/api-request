@@ -57,7 +57,7 @@ class ApiRequest {
     async get<T>(route: string, config?: Omit<RequestConfig, "data">) {
         const response = await this.fetch("GET", route, config);
 
-        if (!response.ok) throw this.handleError(response);
+        if (!response.ok) await this.handleError(response);
         const result: T = await this.handleSuccess(response);
         return result;
     }
@@ -65,7 +65,7 @@ class ApiRequest {
     async post<T>(route: string, config?: RequestConfig) {
         const response = await this.fetch("POST", route, config);
 
-        if (!response.ok) throw this.handleError(response);
+        if (!response.ok) await this.handleError(response);
         const result: T = await this.handleSuccess(response);
         return result;
     }
@@ -73,7 +73,7 @@ class ApiRequest {
     async put<T>(route: string, config?: RequestConfig) {
         const response = await this.fetch("PUT", route, config);
 
-        if (!response.ok) throw this.handleError(response);
+        if (!response.ok) await this.handleError(response);
         const result: T = await this.handleSuccess(response);
         return result;
     }
@@ -81,7 +81,7 @@ class ApiRequest {
     async patch<T>(route: string, config?: RequestConfig) {
         const response = await this.fetch("PATCH", route, config);
 
-        if (!response.ok) throw this.handleError(response);
+        if (!response.ok) await this.handleError(response);
         const result: T = await this.handleSuccess(response);
         return result;
     }
@@ -89,7 +89,7 @@ class ApiRequest {
     async delete<T>(route: string, config?: Omit<RequestConfig, "data">) {
         const response = await this.fetch("DELETE", route, config);
 
-        if (!response.ok) throw this.handleError(response);
+        if (!response.ok) await this.handleError(response);
         const result: T = await this.handleSuccess(response);
         return result;
     }
