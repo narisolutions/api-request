@@ -1,57 +1,19 @@
 import { Auth } from "firebase/auth";
-
-type ApiConfig = {
-    /**
-     * Base URL to be used for api requests.
-     * @example "https://api.fake.com/v1"
-     */
-    baseURL: string;
-    /**
-     * Authentication method for requests. Currently supports only Bearer authentication method.
-     * @default "Bearer"
-     */
-    authType?: "Bearer";
-    /**
-     * Firebase Auth instance.
-     */
-    authInstance?: Auth;
-    /**
-     * Request timeout in milliseconds.
-     * @default 20000
-     */
-    timeoutMs?: number;
-};
-
-type RequestConfig = {
-    /**
-     * Body of the request
-     */
-    data?: unknown;
-    /**
-     * Abort controller for canceling requests. If not provided method will generate it's own abort controller instance.
-     */
-    controller?: AbortController;
-    /**
-     * Whether or not request should be authenticated.
-     * @default true
-     */
-    authenticate?: boolean;
-};
-
-type RequestMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+import { ApiConfig, GetBodyInput, GetHeadersInput, RequestConfig, RequestMethod } from "./types";
 
 class ApiRequest {
     public baseURL: string | null = null;
-
     protected authType: "Bearer" = "Bearer";
     protected authInstance: Auth | null = null;
     protected timeoutMs = 20000;
+    protected headers: Record<string, string> = {};
 
     constructor(config: ApiConfig) {
         this.baseURL = config.baseURL;
         if (config.timeoutMs) this.timeoutMs = config.timeoutMs;
         if (config.authType) this.authType = config.authType;
         if (config.authInstance) this.authInstance = config.authInstance;
+        if (config.headers) this.headers = config.headers;
     }
 
     async get<T>(route: string, config?: Omit<RequestConfig, "data">) {
@@ -98,13 +60,14 @@ class ApiRequest {
         const authenticate = config?.authenticate ?? true;
         const controller = config?.controller ?? new AbortController();
         const data = config?.data ?? null;
+        const customHeaders = { ...this.headers, ...config?.headers };
 
         if ((method === "GET" || method === "DELETE") && data !== null) {
             throw new Error(`Invalid method call. Can't pass data to ${method} request.`);
         }
 
         const id = setTimeout(() => controller.abort(), this.timeoutMs);
-        const headers = await this.getHeaders({ data, authenticate });
+        const headers = await this.getHeaders({ data, customHeaders, authenticate });
 
         const response = await fetch(this.baseURL + route, {
             headers,
@@ -120,7 +83,9 @@ class ApiRequest {
         return response;
     }
 
-    protected async getHeaders({ data, authenticate }: { data?: unknown; authenticate?: boolean }) {
+    protected async getHeaders(input: GetHeadersInput) {
+        const { data, customHeaders, authenticate } = input;
+
         let token = "";
 
         if (authenticate) {
@@ -129,29 +94,25 @@ class ApiRequest {
 
         if (data instanceof FormData) {
             return {
-                ...(token && {
-                    Authorization: `Bearer ${token}`,
-                }),
+                ...customHeaders,
+                ...(token && { Authorization: `Bearer ${token}` }),
             };
         }
 
         return {
             Accept: "application/json",
             "Content-Type": "application/json",
-            ...(token && {
-                Authorization: `Bearer ${token}`,
-            }),
+            ...customHeaders,
+            ...(token && { Authorization: `Bearer ${token}` }),
         };
     }
 
-    protected getBody({ data }: { data?: unknown; authenticate?: boolean }) {
-        if (!data) {
-            return null;
-        }
+    protected getBody(input: GetBodyInput) {
+        const { data } = input;
 
-        if (data instanceof FormData) {
-            return data;
-        }
+        if (!data) return null;
+
+        if (data instanceof FormData) return data;
 
         return JSON.stringify(data);
     }
