@@ -10,14 +10,14 @@ Please note, it's planned to make this library more sophisticated in time.
 
 ## Usage
 
-```
+```javascript
 import { ApiRequest } from "@narisolutions/api-request";
 
-const api = new ApiRequest( {...} );
+const api = new ApiRequest( { baseURL: "https://api.example.com/v1", ... } );
 
 const getUsers = () => {
     try {
-        const users = await api.CALL("GET", "/users");
+        const users = await api.get("/users");
     }catch(e) {
         ...
     }
@@ -28,19 +28,19 @@ const getUsers = () => {
 
 #### TypeScript
 
-```
+```typescript
 import { ApiRequest } from "@narisolutions/api-request";
 
-const api = new ApiRequest( {...} );
+const api = new ApiRequest( { baseURL: "https://api.example.com/v1", ... } );
 
-type User {
+type User = {
     name: string;
     age: number;
 }
 
 const getUsers = () => {
     try {
-        const users = await api.CALL<User[]>("GET", "/users");
+        const users = await api.get<User[]>("/users");
     }catch(e) {
         ...
     }
