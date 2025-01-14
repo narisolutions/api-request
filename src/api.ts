@@ -159,8 +159,7 @@ class RequestHandler {
             error = await response.text();
         }
 
-        if (typeof error === "string") throw Error(error);
-        throw Error("Something went wrong.");
+        throw Error(error);
     }
 
     private async getToken(refresh?: boolean) {
