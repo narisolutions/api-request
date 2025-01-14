@@ -1,1 +1,1 @@
-export { default as ApiRequest } from "./api";
+export { default as RequestHandler } from "./api";

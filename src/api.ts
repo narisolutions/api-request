@@ -1,7 +1,7 @@
 import { Auth } from "firebase/auth";
 import { ApiConfig, GetBodyInput, GetHeadersInput, RequestConfig, RequestMethod } from "./types";
 
-class ApiRequest {
+class RequestHandler {
     public baseURL: string | null = null;
     protected authType: "Bearer" = "Bearer";
     protected authInstance: Auth | null = null;
@@ -120,24 +120,31 @@ class ApiRequest {
     protected async handleSuccess(response: Response) {
         const contentType = response.headers.get("content-type");
 
-        const isMedia =
-            contentType?.startsWith("audio/") ||
-            contentType?.startsWith("video/") ||
-            contentType?.startsWith("image/");
-
         const isJson = contentType?.startsWith("application/json");
-
-        const isFile = contentType?.startsWith("application/pdf");
 
         if (isJson) {
             return await response.json();
         }
 
+        const isFile =
+            contentType?.startsWith("application/pdf") ||
+            contentType?.startsWith("application/zip") ||
+            contentType?.startsWith("application/x-zip-compressed") ||
+            contentType?.startsWith("application/msword") ||
+            contentType?.startsWith("application/vnd.ms-excel");
+
+        const isMedia =
+            contentType?.startsWith("audio/") ||
+            contentType?.startsWith("video/") ||
+            contentType?.startsWith("image/") ||
+            contentType?.startsWith("font/");
+
+        // TODO: Handling media files needs improvements
         if (isFile || isMedia) {
             const blob = await response.blob();
-            const fileName = response.headers.get("Content-Disposition");
+            const filename = response.headers.get("Content-Disposition");
 
-            return { blob, ...(fileName && { fileName }) };
+            return { blob, ...(filename && { filename }) };
         }
 
         return await response.text();
@@ -203,4 +210,4 @@ class ApiRequest {
     }
 }
 
-export default ApiRequest;
+export default RequestHandler;
