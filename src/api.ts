@@ -1,7 +1,7 @@
 import { Auth } from "firebase/auth";
 import { ApiConfig, GetBodyInput, GetHeadersInput, RequestConfig, RequestMethod } from "./types";
 
-class ApiRequest {
+class RequestHandler {
     public baseURL: string | null = null;
     protected authType: "Bearer" = "Bearer";
     protected authInstance: Auth | null = null;
@@ -139,6 +139,7 @@ class ApiRequest {
             contentType?.startsWith("image/") ||
             contentType?.startsWith("font/");
 
+        // TODO: Handling media files needs improvements
         if (isFile || isMedia) {
             const blob = await response.blob();
             const filename = response.headers.get("Content-Disposition");
@@ -209,4 +210,4 @@ class ApiRequest {
     }
 }
 
-export default ApiRequest;
+export default RequestHandler;
