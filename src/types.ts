@@ -32,10 +32,6 @@ type RequestConfig = {
      */
     data?: unknown;
     /**
-     * Custom headers to send for this request. This takes priority over default headers and will override matched properties in headers during class instantiation.
-     */
-    headers?: Record<string, string>;
-    /**
      * Abort controller for canceling requests. If not provided method will generate it's own abort controller instance.
      */
     controller?: AbortController;
@@ -44,6 +40,15 @@ type RequestConfig = {
      * @default true
      */
     authenticate?: boolean;
+    /**
+     * Custom headers to send for this request. This takes priority over default headers and will override matched properties in headers during class instantiation.
+     */
+    headers?: Record<string, string>;
+    /**
+     * Request timeout in milliseconds.
+     * @default 20000
+     */
+    timeoutMs?: number;
 };
 
 type GetHeadersInput = {

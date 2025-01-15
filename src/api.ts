@@ -61,12 +61,13 @@ class RequestHandler {
         const controller = config?.controller ?? new AbortController();
         const data = config?.data ?? null;
         const customHeaders = { ...this.headers, ...config?.headers };
+        const timeoutMs = config?.timeoutMs ?? this.timeoutMs;
 
         if ((method === "GET" || method === "DELETE") && data !== null) {
             throw new Error(`Invalid method call. Can't pass data to ${method} request.`);
         }
 
-        const id = setTimeout(() => controller.abort(), this.timeoutMs);
+        const id = setTimeout(() => controller.abort(), timeoutMs);
         const headers = await this.getHeaders({ data, customHeaders, authenticate });
 
         const response = await fetch(this.baseURL + route, {
