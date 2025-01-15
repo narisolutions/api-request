@@ -45,8 +45,7 @@ type RequestConfig = {
      */
     headers?: Record<string, string>;
     /**
-     * Request timeout in milliseconds.
-     * @default 20000
+     * Timeout for this request in milliseconds.
      */
     timeoutMs?: number;
 };
