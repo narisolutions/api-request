@@ -118,6 +118,10 @@ class RequestHandler {
     }
 
     protected async handleSuccess(response: Response) {
+        if (response.headers.get("update-token") === "true") {
+            await this.getToken(true);
+        }
+
         const contentType = response.headers.get("content-type");
 
         const isJson = contentType?.startsWith("application/json");
